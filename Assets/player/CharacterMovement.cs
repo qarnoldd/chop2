@@ -7,14 +7,17 @@ public class CharacterMovement : MonoBehaviour
 {
     public float speed = 4;
     public float rotateSpeed = 2;
+    public float jumpStrength = 10;
+    public bool onFloor = true;
 
-    Rigidbody rb;
+    private Rigidbody rb;
+    private Animator anim;
 
     Vector3 lookPos;
     Vector3 keyboardRotate;
-    
-    private Animator anim;
-    // Start is called before the first frame update
+
+    // RUNTIME -------------------------------------------------------------------------------------
+
     void Start()
     {
         anim = GetComponent<Animator>();
@@ -24,50 +27,77 @@ public class CharacterMovement : MonoBehaviour
 
     void Update()
     {
+        print("VELOCITY: " + rb.velocity);
         Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
         RaycastHit hit;
-        if(Physics.Raycast(ray, out hit, 100))
+
+        if(Physics.Raycast(ray, out hit, 200))
         {
             lookPos = hit.point;
         }
 
         Vector3 lookDir = lookPos - transform.position;
         lookDir.y = 0;
-        lookAttack(lookDir);
-        lookRoll(lookDir);
-        
-    }
-
-
-    // Update is called once per frame
-    void FixedUpdate()
-    {
-        //axis
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        
-        keyboardRotate.x = Mathf.Clamp(horizontal * rotateSpeed, -1, 1);
-        keyboardRotate.z = Mathf.Clamp(vertical * rotateSpeed, -1, 1);
-
-        if (horizontal != 0 || vertical != 0)
+        if (onFloor)
         {
-            anim.SetBool("moving", true);
+            anim.SetBool("jumping", false);
+            lookAttack(lookDir);
+            lookRoll();
         }
         else
         {
-            anim.SetBool("moving", false);
+            anim.SetBool("jumping", true);
         }
-
-        Vector3 movement = new Vector3(horizontal, 0,vertical);
-        rb.AddForce(movement * speed /Time.deltaTime);
     }
 
-    void lookAttack(Vector3 lookDir)
+    void FixedUpdate()
+    {
+        float horizontal = Input.GetAxis("Horizontal");
+        float vertical = Input.GetAxis("Vertical");
+        
+        if(onFloor)
+            movement(horizontal, vertical, speed);
+        else
+            movement(horizontal, vertical, speed/2);
+    }
+
+    // FUNCTIONS -----------------------------------------------------------------------------------
+
+    void movement(float horizontal, float vertical, float moveSpeed) //movement determined by keyboard
+    {
+        keyboardRotate.x = Mathf.Clamp(horizontal * rotateSpeed, -1, 1);
+        keyboardRotate.z = Mathf.Clamp(vertical * rotateSpeed, -1, 1);
+
+
+        if (horizontal != 0 || vertical != 0)
+            anim.SetBool("moving", true);
+        else
+            anim.SetBool("moving", false);
+
+        Vector3 movement = new Vector3(horizontal,0, vertical).normalized;
+
+        rb.AddForce(movement * moveSpeed / Time.deltaTime);
+
+        if (Input.GetKeyDown("space") && onFloor)
+        {
+            rb.AddForce(new Vector3(0, jumpStrength, 0) / Time.deltaTime, ForceMode.Impulse);
+            onFloor = false;
+        }
+    }
+
+    private void OnCollisionEnter(Collision collision)
+    {
+        if(collision.gameObject.tag == "Ground")
+        {
+            onFloor = true;
+        }
+    }
+
+    void lookAttack(Vector3 lookDir) //set attack animation state
     { 
         if (Input.GetMouseButtonDown(0))
         {
             transform.LookAt(transform.position + lookDir, Vector3.up);
-            anim.SetBool("moving", false);
             anim.SetBool("attacking", true);
             this.enabled = false;
         }
@@ -75,22 +105,16 @@ public class CharacterMovement : MonoBehaviour
         else
         {
             transform.LookAt(transform.position + keyboardRotate, Vector3.up);
-            anim.SetBool("attacking", false);
         }
     }
 
-    void lookRoll(Vector3 lookDir)
+    void lookRoll() //set roll animation state
     {
         transform.LookAt(transform.position + keyboardRotate, Vector3.up);
-        if (Input.GetKeyDown("space"))
+        if (Input.GetKeyDown("left shift"))
         {
             anim.SetBool("rolling", true);
             this.enabled = false;
-        }
-
-        else
-        {
-            anim.SetBool("rolling", false);
         }
     }
 }

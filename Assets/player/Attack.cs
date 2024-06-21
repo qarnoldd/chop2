@@ -13,7 +13,6 @@ public class Attack : MonoBehaviour
 
     private Boolean rolling = false;
     private Vector3 direction;
-    // Start is called before the first frame update
     void Start()
     {
         rb = GetComponent<Rigidbody>();
@@ -21,13 +20,12 @@ public class Attack : MonoBehaviour
         anim = GetComponent<Animator>();
     }
 
-    // Update is called once per frame
-    void Update()
+    void FixedUpdate()
     {
         direction = transform.forward;
         if (rolling)
         {
-            rb.AddForce(direction * rollSpeed / Time.deltaTime);
+            rb.AddForce(direction * rollSpeed / Time.deltaTime, ForceMode.Impulse);
         }
     }
 
