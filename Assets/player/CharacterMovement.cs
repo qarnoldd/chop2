@@ -2,119 +2,172 @@ using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UIElements;
 
 public class CharacterMovement : MonoBehaviour
 {
-    public float speed = 4;
-    public float rotateSpeed = 2;
-    public float jumpStrength = 10;
-    public bool onFloor = true;
+    [Header("Movement")]
+    public float moveSpeed;
 
-    private Rigidbody rb;
-    private Animator anim;
+    public float groundDrag;
 
-    Vector3 lookPos;
-    Vector3 keyboardRotate;
+    public float jumpForce;
+    public float jumpCooldown;
+    public float airMultiplier;
+    public bool readyToJump;
 
-    // RUNTIME -------------------------------------------------------------------------------------
+    [Header("Ground Check")]
+    public float playerHeight;
+    public LayerMask ground;
+    public bool grounded;
 
-    void Start()
+    [Header("Slope Handling")]
+    public float maxSlopeAngle;
+    private RaycastHit slopeHit;
+
+    public Camera cam;
+
+    public Animator anim;
+    Vector3 rayStart;
+
+    float horizontalInput;
+    float verticalInput;
+
+    Vector3 moveDirection;
+
+    Rigidbody rb;
+
+    private void Start()
     {
-        anim = GetComponent<Animator>();
         rb = GetComponent<Rigidbody>();
-        keyboardRotate = new Vector3(0,0,0);
+        rb.freezeRotation = true;
+        ResetJump();
     }
 
-    void Update()
+    private void Update()
     {
-        print("VELOCITY: " + rb.velocity);
-        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        myInput();
+        SpeedControl();
+        groundCheck();
+        Animator();
+        rayStart = transform.position + Vector3.up * 0.1f;
+    }
+
+    private void FixedUpdate()
+    {
+        MovePlayer();
+    }
+
+    private void Animator()
+    {
+        anim.SetBool("jumping", !grounded);
+    }
+
+    private void myInput()
+    {
+        horizontalInput = Input.GetAxisRaw("Horizontal");
+        verticalInput = Input.GetAxisRaw("Vertical");
+
+        if(Input.GetButtonDown("Jump") && readyToJump && grounded)
+        {
+            readyToJump = false;
+            Jump();
+            Invoke(nameof(ResetJump), jumpCooldown);
+        }
+    }
+
+    private void mouseLookAt()
+    {
         RaycastHit hit;
-
-        if(Physics.Raycast(ray, out hit, 200))
+        Ray ray = Camera.main.ScreenPointToRay(Input.mousePosition);
+        if(Physics.Raycast(ray, out hit))
         {
-            lookPos = hit.point;
-        }
-
-        Vector3 lookDir = lookPos - transform.position;
-        lookDir.y = 0;
-        if (onFloor)
-        {
-            anim.SetBool("jumping", false);
-            lookAttack(lookDir);
-            lookRoll();
-        }
-        else
-        {
-            anim.SetBool("jumping", true);
+            Vector3 look = new Vector3(hit.point.x, transform.position.y, hit.point.z);
+            transform.LookAt(look);
         }
     }
 
-    void FixedUpdate()
+    private void MovePlayer()
     {
-        float horizontal = Input.GetAxis("Horizontal");
-        float vertical = Input.GetAxis("Vertical");
-        
-        if(onFloor)
-            movement(horizontal, vertical, speed);
-        else
-            movement(horizontal, vertical, speed/2);
-    }
+        Vector3 movement = new Vector3 (horizontalInput, 0, verticalInput);
+        movement.Normalize();
 
-    // FUNCTIONS -----------------------------------------------------------------------------------
+        if (OnSlope())
+        {
+            rb.AddForce(GetSlopeMoveDirection() * moveSpeed * 20f, ForceMode.Force);
+            if (rb.velocity.y > 0)
+                rb.AddForce(Vector3.down * 80f, ForceMode.Force);
+        }
 
-    void movement(float horizontal, float vertical, float moveSpeed) //movement determined by keyboard
-    {
-        keyboardRotate.x = Mathf.Clamp(horizontal * rotateSpeed, -1, 1);
-        keyboardRotate.z = Mathf.Clamp(vertical * rotateSpeed, -1, 1);
+        if(grounded)
+            rb.AddForce(movement.normalized * moveSpeed * 10f, ForceMode.Force);
+        else if (!grounded)
+            rb.AddForce(movement.normalized * moveSpeed * 10f * airMultiplier, ForceMode.Force);
 
-
-        if (horizontal != 0 || vertical != 0)
+        if (movement != Vector3.zero)
+        {
+            if (!Input.GetMouseButton(0))
+            {
+                float angle = Mathf.Atan2(movement.x, movement.z) * Mathf.Rad2Deg;
+                transform.rotation = Quaternion.Euler(0, angle, 0);
+            }
             anim.SetBool("moving", true);
+        }
+       
         else
             anim.SetBool("moving", false);
-
-        Vector3 movement = new Vector3(horizontal,0, vertical).normalized;
-
-        rb.AddForce(movement * moveSpeed / Time.deltaTime);
-
-        if (Input.GetKeyDown("space") && onFloor)
+        
+        if (Input.GetMouseButton(0))
         {
-            rb.AddForce(new Vector3(0, jumpStrength, 0) / Time.deltaTime, ForceMode.Impulse);
-            onFloor = false;
+            mouseLookAt();
         }
     }
 
-    private void OnCollisionEnter(Collision collision)
+    private void groundCheck()
     {
-        if(collision.gameObject.tag == "Ground")
-        {
-            onFloor = true;
-        }
-    }
+        grounded = Physics.Raycast(rayStart, Vector3.down, playerHeight * 0.5f + 0.2f, ground);
+        Debug.DrawRay(rayStart, Vector3.down * (playerHeight * 0.5f + 0.2f),Color.red);
 
-    void lookAttack(Vector3 lookDir) //set attack animation state
-    { 
-        if (Input.GetMouseButtonDown(0))
-        {
-            transform.LookAt(transform.position + lookDir, Vector3.up);
-            anim.SetBool("attacking", true);
-            this.enabled = false;
-        }
-
+        if (grounded)
+            rb.drag = groundDrag;
         else
-        {
-            transform.LookAt(transform.position + keyboardRotate, Vector3.up);
-        }
+            rb.drag = 0;
     }
 
-    void lookRoll() //set roll animation state
+    private void SpeedControl()
     {
-        transform.LookAt(transform.position + keyboardRotate, Vector3.up);
-        if (Input.GetKeyDown("left shift"))
+        Vector3 flatVel = new Vector3(rb.velocity.x,0f,rb.velocity.z);
+        if(flatVel.magnitude > moveSpeed)
         {
-            anim.SetBool("rolling", true);
-            this.enabled = false;
+            Vector3 limitedVel = flatVel.normalized * moveSpeed;
+            rb.velocity = new Vector3(limitedVel.x, rb.velocity.y, limitedVel.z);
+        } 
+
+    }
+
+    private void Jump()
+    {
+        rb.velocity = new Vector3(rb.velocity.x,0f, rb.velocity.z);
+        rb.AddForce(transform.up * jumpForce, ForceMode.Impulse);
+    }
+
+    private void ResetJump()
+    {
+        readyToJump = true;
+    }
+
+    private bool OnSlope()
+    {
+        if (Physics.Raycast(rayStart, Vector3.down, out slopeHit, playerHeight * 0.5f + 0.3f))
+        {
+            float angle = Vector3.Angle(Vector3.up, slopeHit.normal);
+            return angle < maxSlopeAngle && angle != 0;
         }
+        return false;
+    }
+
+    private Vector3 GetSlopeMoveDirection()
+    {
+        return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
     }
 }

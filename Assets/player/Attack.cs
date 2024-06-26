@@ -22,10 +22,20 @@ public class Attack : MonoBehaviour
 
     void FixedUpdate()
     {
-        direction = transform.forward;
-        if (rolling)
+        UserInput();
+    }
+    void UserInput()
+    {
+        //ATTACK
+        if(Input.GetButtonDown("Fire1"))
         {
-            rb.AddForce(direction * rollSpeed / Time.deltaTime, ForceMode.Impulse);
+            anim.SetBool("attacking", true);
+        }
+
+        //ROLL
+        if (Input.GetButtonDown("Fire2"))
+        {
+            anim.SetBool("rolling", true);
         }
     }
 
@@ -42,7 +52,8 @@ public class Attack : MonoBehaviour
 
     void isRolling()
     {
-        rolling = true;
+        direction = transform.forward;
+        rb.AddForce(direction * rollSpeed * 10f, ForceMode.Impulse);
         cm.enabled = false;
     }
 
