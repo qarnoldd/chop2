@@ -1,16 +1,18 @@
 using System;
 using System.Collections;
 using System.Collections.Generic;
+using UnityEditor;
 using UnityEngine;
 
-public class Hitbox : MonoBehaviour
+public class PlayerHitbox : MonoBehaviour
 {
     private Health health;
-    public string targetTag;
+    private Attack attack;
 
     void Start()
     {
         health = GetComponent<Health>();
+        attack= GetComponent<Attack>();
     }
 
     void Update()
@@ -19,10 +21,9 @@ public class Hitbox : MonoBehaviour
     }
     private void OnTriggerExit(Collider other)
     {
-        if (other.gameObject.tag == targetTag)
+        if (other.gameObject.tag == "EnemyHurtbox")
         {
-            Debug.Log(this.tag  + "HIT");
-            health.takeDamage(other.gameObject.GetComponent<Hurtbox>().getDamage());
+            health.takeDamage(other.gameObject.GetComponent<EnemyHurtbox>().getDamage());
         }
     }
 }

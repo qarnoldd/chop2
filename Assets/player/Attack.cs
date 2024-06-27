@@ -5,15 +5,22 @@ using UnityEngine;
 
 public class Attack : MonoBehaviour
 {
+    [Header("Movement")]
     public float rollSpeed = 3;
+    
+    [Header("Player Stats")]
+    public float damage;
+    public bool parrying = false;
+    private Boolean rolling = false;
 
+    [Header("Boxes")]
+    public GameObject hurtbox;
+    public GameObject parrybox;
     Rigidbody rb;
     private Animator anim;
     private CharacterMovement cm;
-    public GameObject hurtbox;
-    public float damage;
+    
 
-    private Boolean rolling = false;
     private Vector3 direction;
     void Start()
     {
@@ -39,6 +46,34 @@ public class Attack : MonoBehaviour
         {
             anim.SetBool("rolling", true);
         }
+        
+        //PARRY
+        if (Input.GetButtonDown("Fire3"))
+        {
+            anim.SetBool("parrying", true);
+        }
+    }
+
+    void parryFrame()
+    {
+        parrybox.active = true;
+        parrying = true;
+    }
+
+    void endParryFrame()
+    {
+        parrybox.active = false; 
+        parrying = false;
+    }
+
+    void isParrying()
+    {
+        cm.enabled = false;
+    }
+    void notParrying()
+    {
+        anim.SetBool("parrying", false);
+        cm.enabled = true;
     }
 
     void isAttacking()
@@ -60,7 +95,6 @@ public class Attack : MonoBehaviour
 
     void disableHurtbox()
     {
-        damage = 0;
         hurtbox.SetActive(false);
     }
 

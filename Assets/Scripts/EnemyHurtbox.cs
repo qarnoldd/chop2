@@ -2,7 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 
-public class Hurtbox : MonoBehaviour
+public class EnemyHurtbox : MonoBehaviour
 {
     public float damage;
     public GameObject user;
@@ -16,8 +16,12 @@ public class Hurtbox : MonoBehaviour
 
     public float getDamage()
     {
-        print("DAMAGE: " + user.GetComponent<Attack>().damage);
-        damage = user.GetComponent<Attack>().damage;
+        this.damage = user.GetComponent<EnemyAttack>().damage;
         return damage;
+    }
+
+    public void stun()
+    {
+        user.GetComponent<EnemyAttack>().stunned();
     }
 }
