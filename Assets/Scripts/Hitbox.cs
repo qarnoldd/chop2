@@ -6,7 +6,6 @@ using UnityEngine;
 public class Hitbox : MonoBehaviour
 {
     private Health health;
-    private Attack player;
     public string targetTag;
 
     void Start()
@@ -18,10 +17,11 @@ public class Hitbox : MonoBehaviour
     {
         
     }
-    private void OnTriggerEnter(Collider other)
+    private void OnTriggerExit(Collider other)
     {
         if (other.gameObject.tag == targetTag)
         {
+            Debug.Log(this.tag  + "HIT");
             health.takeDamage(other.gameObject.GetComponent<Hurtbox>().getDamage());
         }
     }

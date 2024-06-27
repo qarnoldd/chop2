@@ -54,7 +54,7 @@ public class Attack : MonoBehaviour
     }
     void enableHurtbox()
     {
-        damage = 1;
+        hurtbox.GetComponent<Hurtbox>().damage = damage;
         hurtbox.SetActive(true);
     }
 
@@ -73,7 +73,6 @@ public class Attack : MonoBehaviour
 
     void notRolling()
     {
-        rolling = false;
         anim.SetBool("rolling", false);
         cm.enabled = true;
     }

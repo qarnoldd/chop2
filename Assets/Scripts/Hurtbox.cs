@@ -4,15 +4,13 @@ using UnityEngine;
 
 public class Hurtbox : MonoBehaviour
 {
-    private float damage;
-    public GameObject player;
+    public float damage;
     void Start()
     {
     }
 
     void Update()
     {
-        damage = player.GetComponent<Attack>().damage;
     }
 
     public float getDamage()
