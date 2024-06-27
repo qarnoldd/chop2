@@ -4,15 +4,19 @@ using UnityEngine;
 
 public class Hurtbox : MonoBehaviour
 {
-    // Start is called before the first frame update
+    private float damage;
+    public GameObject player;
     void Start()
     {
-        
     }
 
-    // Update is called once per frame
     void Update()
     {
-        
+        damage = player.GetComponent<Attack>().damage;
+    }
+
+    public float getDamage()
+    {
+        return damage;
     }
 }

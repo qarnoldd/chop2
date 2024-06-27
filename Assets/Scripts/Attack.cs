@@ -10,6 +10,8 @@ public class Attack : MonoBehaviour
     Rigidbody rb;
     private Animator anim;
     private CharacterMovement cm;
+    public GameObject hurtbox;
+    public float damage;
 
     private Boolean rolling = false;
     private Vector3 direction;
@@ -46,8 +48,20 @@ public class Attack : MonoBehaviour
 
     void notAttacking()
     {
+        hurtbox.SetActive(false);
         anim.SetBool("attacking", false);
         cm.enabled = true;
+    }
+    void enableHurtbox()
+    {
+        damage = 1;
+        hurtbox.SetActive(true);
+    }
+
+    void disableHurtbox()
+    {
+        damage = 0;
+        hurtbox.SetActive(false);
     }
 
     void isRolling()
