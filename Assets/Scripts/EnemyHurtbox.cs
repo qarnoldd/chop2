@@ -6,13 +6,6 @@ public class EnemyHurtbox : MonoBehaviour
 {
     public float damage;
     public GameObject user;
-    void Start()
-    {
-    }
-
-    void Update()
-    {
-    }
 
     public float getDamage()
     {

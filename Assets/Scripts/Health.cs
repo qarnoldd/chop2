@@ -1,3 +1,4 @@
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
@@ -5,9 +6,12 @@ using UnityEngine;
 public class Health : MonoBehaviour
 {
     public float health;
+    AudioSource audio;
+    public bool dead = false;
 
     void Start()
     {
+        audio = GetComponent<AudioSource>();
     }
 
     void Update()
@@ -24,7 +28,7 @@ public class Health : MonoBehaviour
     {
         if(health <= 0)
         {
-            Destroy(this.gameObject);
+            dead = true;
         }
     }
 }

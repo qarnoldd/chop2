@@ -36,12 +36,14 @@ public class CharacterMovement : MonoBehaviour
     Vector3 moveDirection;
 
     Rigidbody rb;
+    AudioSource audio;
 
     private void Start()
     {
         rb = GetComponent<Rigidbody>();
         rb.freezeRotation = true;
         ResetJump();
+        audio = GetComponent<AudioSource>();
     }
 
     private void Update()
@@ -169,5 +171,10 @@ public class CharacterMovement : MonoBehaviour
     private Vector3 GetSlopeMoveDirection()
     {
         return Vector3.ProjectOnPlane(moveDirection, slopeHit.normal).normalized;
+    }
+
+    void playFootstep()
+    {
+        AudioManager.Instance.PlaySFX("footstep1", audio);
     }
 }

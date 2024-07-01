@@ -7,22 +7,18 @@ using UnityEngine;
 public class PlayerHitbox : MonoBehaviour
 {
     private Health health;
-    private Attack attack;
+    AudioSource audio;
 
     void Start()
     {
         health = GetComponent<Health>();
-        attack= GetComponent<Attack>();
+        audio = GetComponent<AudioSource>();
     }
-
-    void Update()
-    {
-        
-    }
-    private void OnTriggerExit(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "EnemyHurtbox")
         {
+            AudioManager.Instance.PlaySFX("hit", audio);
             health.takeDamage(other.gameObject.GetComponent<EnemyHurtbox>().getDamage());
         }
     }

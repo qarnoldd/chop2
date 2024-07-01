@@ -72268,28 +72268,35 @@ AnimationClip:
   m_HasMotionFloatCurves: 0
   m_Events:
   - time: 0.8
-    functionName: enableHurtbox
-    data: 
-    objectReferenceParameter: {fileID: 0}
-    floatParameter: 0
-    intParameter: 0
-    messageOptions: 0
-  - time: 0.8
     functionName: onParry
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 1.2333333
-    functionName: disableHurtbox
+  - time: 0.8
+    functionName: playSlash
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0
     intParameter: 0
     messageOptions: 0
-  - time: 1.2333333
+  - time: 0.93333334
+    functionName: enableHurtbox
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 0.93333334
     functionName: offParry
+    data: 
+    objectReferenceParameter: {fileID: 0}
+    floatParameter: 0
+    intParameter: 0
+    messageOptions: 0
+  - time: 1.0666667
+    functionName: disableHurtbox
     data: 
     objectReferenceParameter: {fileID: 0}
     floatParameter: 0

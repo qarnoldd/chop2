@@ -16,7 +16,6 @@ public class Hurtbox : MonoBehaviour
 
     public float getDamage()
     {
-        print("DAMAGE: " + user.GetComponent<Attack>().damage);
         damage = user.GetComponent<Attack>().damage;
         return damage;
     }

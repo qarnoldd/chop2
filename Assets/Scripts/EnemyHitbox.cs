@@ -8,20 +8,19 @@ public class EnemyHitbox : MonoBehaviour
     private Health health;
     private EnemyAttack attack;
     public string targetTag;
+    AudioSource audio;
 
     void Start()
     {
         health = GetComponent<Health>();
+        audio = GetComponent<AudioSource>();
     }
 
-    void Update()
-    {
-        
-    }
-    private void OnTriggerExit(Collider other)
+    private void OnTriggerEnter(Collider other)
     {
         if (other.gameObject.tag == "PlayerHurtbox")
         {
+            AudioManager.Instance.PlaySFX("hit", audio);
             health.takeDamage(other.gameObject.GetComponent<Hurtbox>().getDamage());
         }
     }
